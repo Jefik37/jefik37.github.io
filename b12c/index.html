@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>B12C</title>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			background: #000;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
+		}
+		#wrapper {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			background: #000;
+		}
+		canvas {
+			display: block;
+			max-width: 100vw;
+			max-height: 100vh;
+			background: #000;
+		}
+	</style>
+</head>
+<body>
+<div id="wrapper">
+	<canvas id="canvas" width="540" height="960"></canvas>
+</div>
+
+<script type="text/javascript">
+(function(){
+var TXT = {
+	PLAYBTN: 'Clique aqui',
+	LOAD:    'Carregando...',
+	EXECUTE: 'Iniciando...',
+	DLERROR: 'Erro.\nVerifique sua conexão.',
+	NOWEBGL: 'Seu navegador ou placa de vídeo não suporta <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Veja como ativar <a href="http://get.webgl.org/">aqui</a>.'
+};
+
+var canvas = document.getElementById('canvas'), ctx;
+var Msg = function(m) {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = '#888';
+	var a = m.split('\n'), n = a.length;
+	for (var i = 0; i < n; i++)
+		ctx.fillText(a[i], canvas.width/2, canvas.height/2 - (n-1)*20 + 10 + i*40);
+};
+
+var Fail = function(m) {
+	canvas.outerHTML = '<div style="width:100vw;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;"><div style="background:#FFF;color:#000;padding:1.5em;text-align:center;max-width:90%">'+TXT.NOWEBGL+(m?'<br><br>'+m:'')+'</div></div>';
+};
+
+var DoExecute = function() {
+	Msg(TXT.EXECUTE);
+	Module.canvas = canvas.cloneNode(false);
+	Module.canvas.oncontextmenu = e => e.preventDefault();
+	Module.setWindowTitle = () => {};
+	Module.postRun = function() {
+		if (!Module.noExitRuntime) { Fail(); return; }
+		canvas.parentNode.replaceChild(Module.canvas, canvas);
+		Txt = Msg = ctx = canvas = null;
+		Module.canvas.focus();
+	};
+	setTimeout(() => Module.run(['/p']), 50);
+};
+
+var DoLoad = function() {
+	Msg(TXT.LOAD);
+	window.onerror = (e,u,l) => Fail(e+'<br>('+u+':'+l+')');
+	Module = {
+		TOTAL_MEMORY: 1024*1024*48,
+		TOTAL_STACK: 1024*1024*4,
+		currentScriptUrl: '-',
+		preInit: DoExecute
+	};
+	var s = document.createElement('script');
+	s.src = 'index.js';
+	s.async = true;
+	s.onerror = () => { Msg(TXT.DLERROR); canvas.disabled = false; };
+	document.documentElement.appendChild(s);
+};
+
+canvas.oncontextmenu = e => e.preventDefault();
+ctx = canvas.getContext('2d');
+ctx.font = '30px sans-serif';
+ctx.textAlign = 'center';
+Msg(TXT.LOAD);
+
+window.onload = function() {
+	canvas.disabled = true;
+	DoLoad();
+};
+})();
+</script>
+</body>
+</html>
