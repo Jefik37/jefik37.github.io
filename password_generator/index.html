@@ -30,7 +30,7 @@
         </div>
 
         <div id="buttons_div">
-            <button id="refresh_button" onclick="generate_password()" class="button_big">⟳</button>
+            <button id="refresh_button" onclick="main()" class="button_big">⟳</button>
             <button id="clipboard_button" onclick="copy_to_clipboard()" class="button_big">📋</button>
             <p id="clipboard_warning"></p>
         </div>
@@ -61,7 +61,8 @@
             <label class="checkbox_span"><input type="checkbox" id="quotes">"'</label>
             <label class="checkbox_span"><input type="checkbox" id="slashes">\/|_-</label>
             <label class="checkbox_span"><input type="checkbox" id="math_symbols">&lt;&gt;*+!?=</label>
-            <label class="checkbox_span"><input type="checkbox" id="parentheses">{[()]}</label><br><br>
+            <label class="checkbox_span"><input type="checkbox" id="parentheses">{[()]}</label>
+            <label class="checkbox_span"><input type="checkbox" id="cjk">中日韓</label><br><br>
 
             <label for="extra_chars">Also include:</label><br>
             <input id="extra_chars" class="text_fields"><br><br>
