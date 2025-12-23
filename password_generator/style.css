@@ -5,6 +5,8 @@
 
 
 body{
+    padding: 0;
+    margin: 0;
     touch-action: pan-x pan-y;
     background-color: rgb(12, 12, 12);
     color: rgb(194, 194, 194);
@@ -12,6 +14,7 @@ body{
     align-items: center;
     display: flex;
     min-height: 100vh;
+    overflow: hidden;
 }
 
 #main_div{
