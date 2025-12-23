@@ -88,26 +88,38 @@ function subtract_set(set_a, set_b){
     return [...result];
 }
 
-function shuffleString(str){
-    let array = str.split('');
+function shuffleArray(array){
     
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
 
-    return array.join('');
+    return array;
 }
 
 function random_array_item(array){
     return array[Math.floor(Math.random() * array.length)];
 }
 
+function generate_char(password, cur_group, excluded_chars){
+
+    cur_group = subtract_set(cur_group, excluded_chars);
+    cur_group = random_array_item(cur_group);
+    if(cur_group==='cjk'){
+        cur_group = generate_cjk_char();
+        while(excluded_chars.has(cur_group)){cur_group = generate_cjk_char();}
+    }
+
+    password.push(cur_group);
+    return password;
+}
+
 function generate_password(password_length){
 
-    const password = [];
-    const sets = [];
     let cur_group;
+    let password = [];
+    const sets = [];
     const cjk = document.getElementById('cjk');
     const excluded_chars = new Set(document.getElementById('excluded_chars').value);
     let extra_chars = subtract_set(document.getElementById('extra_chars').value, excluded_chars);
@@ -119,18 +131,19 @@ function generate_password(password_length){
     if(extra_chars.length>0){sets.push(extra_chars.join(''));}
     if(cjk.checked){sets.push(['cjk']);}
 
+    if(document.getElementById('use_all_groups').checked){
+        while(sets.length>0){
+            cur_group = sets.pop();
+            generate_char(password, cur_group, excluded_chars);
+        }
+    }
+
     while(password.length<password_length){
         cur_group = random_array_item(sets);
-
-        cur_group = subtract_set(cur_group, excluded_chars);
-        cur_group = random_array_item(cur_group);
-        if(cur_group==='cjk'){
-            cur_group = generate_cjk_char();
-            while(excluded_chars.has(cur_group)){cur_group = generate_cjk_char();}
-        }
-
-        password.push(cur_group);
+        generate_char(password, cur_group, excluded_chars);
     }
+
+    password = shuffleArray(password);
 
     return password.join('');
 
@@ -159,7 +172,7 @@ function validate_checkboxes(){
         quant_checked++;
     }
 
-    if(document.getElementById("cjk").value){
+    if(document.getElementById("cjk").checked){
         refresh_button.disabled = false;
         quant_checked++;
     }
