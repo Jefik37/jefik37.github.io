@@ -8,7 +8,7 @@ const groups = {
     "quotes": "\"'",
     "slashes": "/\\",
     "math_symbols": "+-*=<>!?",
-    "parentheses": "()[]{}"
+    "parentheses": "()[]{}",
 };
 
 let clipboardtimeout;
@@ -23,28 +23,11 @@ const colors = {
     'very_strong': 'rgb(34, 197, 94)'
 };
 
-function generate_char_list(){
-
-    let characters = document.getElementById("extra_chars").value;
-
-    for(let group in groups){
-        if(document.getElementById(group).checked){
-            characters += groups[group];
-        }
-    }
-
-    const excluded_chars = new Set(document.getElementById("excluded_chars").value);
-
-    characters = new Set(characters);
-    characters = [...characters].filter(x => !excluded_chars.has(x));
-
-    if(document.getElementById('exclude_similar').checked){
-        return [...characters].filter(x => !similar_chars.has(x));
-    }
-
-    return Array.from(characters);
-
+function generate_cjk_char(){
+    let cjk_char = Math.floor(Math.random()*20992 + 19968);
+    return String.fromCodePoint(cjk_char);
 }
+
 
 function update_password_quality(){
     
@@ -67,9 +50,7 @@ function update_password_quality(){
 function update_char_count(){
 
     const password_length = document.getElementById("password_input").value.length;
-
     document.getElementById("password_char_length").textContent = password_length;
-
     update_password_quality();
 
 }
@@ -100,32 +81,11 @@ function calculate_entropy(password) {
 }
 
 function subtract_set(set_a, set_b){
+
     let result = new Set(set_a);
+    set_b = new Set(set_b);
     result = [...result].filter(x => !set_b.has(x));
-
-    return result;
-}
-
-function randomize_all_groups(){
-
-    let password = [];
-    let group;
-
-    const excluded_chars = new Set(document.getElementById("excluded_chars").value);
-
-    for (let key in groups) {
-        if(document.getElementById(key).checked){
-            group = subtract_set(groups[key], excluded_chars)
-            password.push(group[Math.floor(Math.random() * group.length)]);
-        }
-    }
-
-    if(document.getElementById('extra_chars').value){
-        group = subtract_set(document.getElementById('extra_chars').value, excluded_chars);
-        password.push(group[Math.floor(Math.random() * group.length)]);
-    }
-
-    return password;
+    return [...result];
 }
 
 function shuffleString(str){
@@ -139,45 +99,57 @@ function shuffleString(str){
     return array.join('');
 }
 
-function randomize_password(characters, password_length){
-    let passwordArray = [];
-
-    if (document.getElementById('use_all_groups').checked) {
-        passwordArray = randomize_all_groups();
-    }
-
-    let allChars = characters;
-
-    while (passwordArray.length < password_length) {
-        passwordArray.push(allChars[Math.floor(Math.random() * allChars.length)]);
-    }
-
-    let password = shuffleString(passwordArray.join(''));
-
-    document.getElementById("password_input").value = password;
-    update_password_quality();
+function random_array_item(array){
+    return array[Math.floor(Math.random() * array.length)];
 }
 
-function generate_password(){
+function generate_password(password_length){
 
-    const characters = generate_char_list();
+    const password = [];
+    const sets = [];
+    let cur_group;
+    const cjk = document.getElementById('cjk');
+    const excluded_chars = new Set(document.getElementById('excluded_chars').value);
+    let extra_chars = subtract_set(document.getElementById('extra_chars').value, excluded_chars);
+
+    for(let group in groups){
+        if(document.getElementById(group).checked){sets.push(groups[group]);}
+    }
+
+    if(extra_chars.length>0){sets.push(extra_chars.join(''));}
+    if(cjk.checked){sets.push(['cjk']);}
+
+    while(password.length<password_length){
+        cur_group = random_array_item(sets);
+
+        cur_group = subtract_set(cur_group, excluded_chars);
+        cur_group = random_array_item(cur_group);
+        if(cur_group==='cjk'){
+            cur_group = generate_cjk_char();
+            while(excluded_chars.has(cur_group)){cur_group = generate_cjk_char();}
+        }
+
+        password.push(cur_group);
+    }
+
+    return password.join('');
+
+}
+
+function main(){
+    
     const password_length = document.getElementById("password_length").value;
 
     validate_checkboxes();
     if(!document.getElementById("refresh_button").disabled){
         document.getElementById("password_char_length").textContent = password_length;
-
-        randomize_password(characters, password_length);
-        // for(let i=5; i<15; i++){
-        //     setTimeout(() => randomize_password(characters, password_length), i*i);
-        // }
-
+        document.getElementById('password_input').value = generate_password(password_length);
     }
-};
+}
 
 function validate_checkboxes(){
 
-    let quant_checked = 0
+    let quant_checked = 0;
     let refresh_button = document.getElementById("refresh_button");
     const password_length = document.getElementById("password_length").value;
     refresh_button.disabled = true;
@@ -187,12 +159,17 @@ function validate_checkboxes(){
         quant_checked++;
     }
 
+    if(document.getElementById("cjk").value){
+        refresh_button.disabled = false;
+        quant_checked++;
+    }
+
     for(let group in groups){
         if(document.getElementById(group).checked){
             refresh_button.disabled = false;
             quant_checked++;
             group = new Set(groups[group]);
-            const excluded_chars = new Set(document.getElementById('excluded_chars').value);
+            const excluded_chars = document.getElementById('excluded_chars').value;
             group = subtract_set(group, excluded_chars);
             if(group.length === 0){refresh_button.disabled = true;}
         }
@@ -238,17 +215,19 @@ document.addEventListener('click', validate_checkboxes);
 document.addEventListener('input', validate_checkboxes);
 document.addEventListener('change', validate_checkboxes);
 
-document.getElementById('extra_chars').addEventListener('input', generate_password);
-document.getElementById('excluded_chars').addEventListener('input', generate_password);
+document.getElementById('extra_chars').addEventListener('input', main);
+document.getElementById('excluded_chars').addEventListener('input', main);
 
-document.getElementById('exclude_similar').addEventListener('change', generate_password);
-document.getElementById('use_all_groups').addEventListener('change', generate_password);
+document.getElementById('exclude_similar').addEventListener('change', main);
+document.getElementById('use_all_groups').addEventListener('change', main);
 
-document.getElementById('button_up').addEventListener('click', generate_password);
-document.getElementById('button_down').addEventListener('click', generate_password);
+document.getElementById('button_up').addEventListener('click', main);
+document.getElementById('button_down').addEventListener('click', main);
+
+document.getElementById('cjk').addEventListener('change', main);
 
 for(let group in groups){
-    document.getElementById(group).addEventListener('change', generate_password);
+    document.getElementById(group).addEventListener('change', main);
 }
 
 
@@ -266,15 +245,16 @@ const numberInput = document.getElementById('password_length');
 
 password_length_slider.addEventListener('input', function() {
     numberInput.value = this.value;
-    generate_password();
+    main();
 });
 
 numberInput.addEventListener('input', function() {
     password_length_slider.value = this.value;
-    generate_password();
+    main();
 });
 
+main();
 check_eye();
 validate_checkboxes();
-document.getElementById("refresh_button").disabled ? document.getElementById("password_input").value = '' : generate_password();
+document.getElementById("refresh_button").disabled ? document.getElementById("password_input").value = '' : main();
 document.getElementById('password_input').addEventListener('input', update_char_count);
