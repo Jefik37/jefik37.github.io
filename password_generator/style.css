@@ -1,9 +1,11 @@
 * {
     box-sizing: border-box;
+    touch-action: manipulation;
 }
 
 
 body{
+    touch-action: pan-x pan-y;
     background-color: rgb(12, 12, 12);
     color: rgb(194, 194, 194);
     justify-content: center;
