@@ -276,3 +276,6 @@ check_eye();
 validate_checkboxes();
 document.getElementById("refresh_button").disabled ? document.getElementById("password_input").value = '' : main();
 document.getElementById('password_input').addEventListener('input', update_char_count);
+
+
+document.addEventListener('contextmenu', e => e.preventDefault());
