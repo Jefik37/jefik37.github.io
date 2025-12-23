@@ -164,7 +164,6 @@ function generate_password(){
     const password_length = document.getElementById("password_length").value;
 
     validate_checkboxes();
-    console.log(document.getElementById("refresh_button").disabled);
     if(!document.getElementById("refresh_button").disabled){
         document.getElementById("password_char_length").textContent = password_length;
 
@@ -249,7 +248,6 @@ document.getElementById('button_up').addEventListener('click', generate_password
 document.getElementById('button_down').addEventListener('click', generate_password);
 
 for(let group in groups){
-    console.log(group);
     document.getElementById(group).addEventListener('change', generate_password);
 }
 
