@@ -117,6 +117,7 @@ function generate_char(password, cur_group, excluded_chars){
 
 function generate_password(password_length){
 
+    let temp_set;
     let cur_group;
     let password = [];
     const sets = [];
@@ -132,15 +133,17 @@ function generate_password(password_length){
     if(cjk.checked){sets.push(['cjk']);}
 
     if(document.getElementById('use_all_groups').checked){
-        while(sets.length>0){
-            cur_group = sets.pop();
-            generate_char(password, cur_group, excluded_chars);
+        temp_sets = [...sets];
+        while(temp_sets.length>0){
+
+            cur_group = temp_sets.pop();
+            password = generate_char(password, cur_group, excluded_chars);
         }
     }
 
     while(password.length<password_length){
         cur_group = random_array_item(sets);
-        generate_char(password, cur_group, excluded_chars);
+        password = generate_char(password, cur_group, excluded_chars);
     }
 
     password = shuffleArray(password);
@@ -153,10 +156,12 @@ function main(){
     
     const password_length = document.getElementById("password_length").value;
 
-    validate_checkboxes();
     if(!document.getElementById("refresh_button").disabled){
         document.getElementById("password_char_length").textContent = password_length;
         document.getElementById('password_input').value = generate_password(password_length);
+        validate_checkboxes();
+        update_char_count();
+        update_password_quality();
     }
 }
 
