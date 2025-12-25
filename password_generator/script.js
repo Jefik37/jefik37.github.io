@@ -7,7 +7,7 @@ const groups = {
     "ponctuation": ".,;:",
     "quotes": "\"'",
     "slashes": "/\\|_-",
-    "math_symbols": "+-*=<>!?",
+    "math_symbols": "+*=<>!?",
     "parentheses": "()[]{}",
 };
 
