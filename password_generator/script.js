@@ -198,15 +198,26 @@ function validate_checkboxes(){
     refresh_button.classList.toggle('inactive_refresh', refresh_button.disabled);
 }
 
+
 function copy_to_clipboard(){
     const text = document.getElementById('password_input').value;
+    let hide_clipboard, clipboardtimeout;
     navigator.clipboard.writeText(text).then(() => {
-        let div_clip = document.getElementById('clipboard_warning');
-        div_clip.textContent = 'copied';
+        const div_clip = document.getElementById('clipboard_warning');
+        div_clip.style.visibility = 'visible';
+        div_clip.style.transition = 'opacity 0s';
+        div_clip.style.opacity = '1';
         clearTimeout(clipboardtimeout);
+        clearTimeout(hide_clipboard);
         clipboardtimeout = setTimeout(
-            () => div_clip.textContent = '', 1000
+            function(div_clip){
+                div_clip.style.opacity = '0';
+                div_clip.style.transition = 'opacity 0.3s';
+            }, 1000, div_clip
         )
+        hide_clipboard = setTimeout((div_clip) => div_clip.style.visibility = "hidden",
+                                    1300, div_clip
+        );
     }).catch(err => {
         console.error("Error copying to clipboard: ", err);
     });
